@@ -1,0 +1,3 @@
+Jacobi X 1024 Y 1024 Px 8 Py 8 Iter 798201 ComputationTime 39.908685 CommsTime 226.875446 ConvTime 15.599585 TotalTime 267.376426 midpoint 5.431022
+GaussSeidel X 1024 Y 1024 Px 8 Py 8 Iter 3201 ComputationTime 0.607670 CommsTime 1.545700 ConvTime 0.146583 TotalTime 2.211527 midpoint 5.642998
+RedBlack X 1024 Y 1024 Px 8 Py 8 Iter 2501 ComputationTime 0.322478 CommsTime 0.780828 ConvTime 0.071707 TotalTime 1.113826 midpoint 5.642974

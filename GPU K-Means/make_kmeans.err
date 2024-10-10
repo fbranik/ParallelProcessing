@@ -1,0 +1,47 @@
+nvcc warning : The 'compute_35', 'compute_37', 'compute_50', 'sm_35', 'sm_37' and 'sm_50' architectures are deprecated, and may be removed in a future release (Use -Wno-deprecated-gpu-targets to suppress warning).
+cuda_kmeans_all_gpu.cu(53): warning: variable "iCluster" was declared but never referenced
+
+cuda_kmeans_all_gpu.cu(201): warning: variable "loop_iterations" was declared but never referenced
+
+cuda_kmeans_all_gpu.cu(202): warning: variable "index" was declared but never referenced
+
+ptxas info    : 0 bytes gmem
+ptxas info    : Compiling entry function '_Z41find_nearest_cluster_and_update_centroidsiiiPfS_PiS_S0_S_' for 'sm_35'
+ptxas info    : Function properties for _Z41find_nearest_cluster_and_update_centroidsiiiPfS_PiS_S0_S_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 32 registers, 384 bytes cmem[0], 12 bytes cmem[2]
+nvcc warning : The 'compute_35', 'compute_37', 'compute_50', 'sm_35', 'sm_37' and 'sm_50' architectures are deprecated, and may be removed in a future release (Use -Wno-deprecated-gpu-targets to suppress warning).
+main_gpu.cu(23): warning: conversion from a string literal to "char *" is deprecated
+
+main_gpu.cu(31): warning: expression has no effect
+
+main_gpu.cu(32): warning: expression has no effect
+
+main_gpu.cu(51): warning: variable "io_timing_read" was declared but never referenced
+
+ptxas info    : 0 bytes gmem
+main_gpu.cu(23): warning: conversion from a string literal to "char *" is deprecated
+
+main_gpu.cu(31): warning: expression has no effect
+
+main_gpu.cu(32): warning: expression has no effect
+
+nvcc warning : The 'compute_35', 'compute_37', 'compute_50', 'sm_35', 'sm_37' and 'sm_50' architectures are deprecated, and may be removed in a future release (Use -Wno-deprecated-gpu-targets to suppress warning).
+main_sec.c: In function 'void usage(char*)':
+main_sec.c:15:9: warning: ISO C++ forbids converting a string constant to 'char*' [-Wwrite-strings]
+   15 |         "Usage: %s [switches]\n"
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~
+   16 |         "       -c num_clusters    : number of clusters (must be > 1)\n"
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   17 |         "       -s size            : size of examined dataset\n"
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   18 |         "       -n num_coords      : number of coordinates\n"
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   19 |         "       -t threshold       : threshold value (default : 0.001)\n"
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   20 |         "       -l loop_threshold  : iterations threshold (default : 10)\n"
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   21 |         "       -d                 : enable debug mode\n"
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   22 |         "       -h                 : print this help information\n";
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

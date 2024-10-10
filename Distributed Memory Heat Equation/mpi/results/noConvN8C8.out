@@ -1,0 +1,9 @@
+Jacobi X 2048 Y 2048 Px 8 Py 8 Iter 256 ComputationTime 0.054017 CommsTime 0.406671 ConvTime 0.000000 TotalTime 0.457081 midpoint 0.000000
+GaussSeidel X 2048 Y 2048 Px 8 Py 8 Iter 256 ComputationTime 0.195560 CommsTime 0.580921 ConvTime 0.000000 TotalTime 0.770482 midpoint 0.849018
+RedBlack X 2048 Y 2048 Px 8 Py 8 Iter 256 ComputationTime 0.132110 CommsTime 0.348769 ConvTime 0.000000 TotalTime 0.474953 midpoint 0.000000
+Jacobi X 4096 Y 4096 Px 8 Py 8 Iter 256 ComputationTime 3.215708 CommsTime 4.039458 ConvTime 0.000000 TotalTime 4.528244 midpoint 0.000000
+GaussSeidel X 4096 Y 4096 Px 8 Py 8 Iter 256 ComputationTime 1.742683 CommsTime 3.764688 ConvTime 0.000000 TotalTime 4.567069 midpoint 0.900935
+RedBlack X 4096 Y 4096 Px 8 Py 8 Iter 256 ComputationTime 6.163959 CommsTime 6.310151 ConvTime 0.000000 TotalTime 7.607597 midpoint 0.000000
+Jacobi X 6144 Y 6144 Px 8 Py 8 Iter 256 ComputationTime 8.204573 CommsTime 9.480761 ConvTime 0.000000 TotalTime 10.857111 midpoint 0.000000
+GaussSeidel X 6144 Y 6144 Px 8 Py 8 Iter 256 ComputationTime 4.296511 CommsTime 8.974619 ConvTime 0.000000 TotalTime 10.947177 midpoint 0.942706
+RedBlack X 6144 Y 6144 Px 8 Py 8 Iter 256 ComputationTime 16.024540 CommsTime 16.751356 ConvTime 0.000000 TotalTime 19.012455 midpoint 0.000000

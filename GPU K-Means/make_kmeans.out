@@ -1,0 +1,11 @@
+rm -rf *.o -rf ObjectDir/*.o kmeans_seq kmeans_cuda_naive kmeans_cuda_transpose kmeans_cuda_shared kmeans_cuda_all_gpu
+/usr/local/cuda-11.4/bin/nvcc -O3 -Ihelper_functions -DVALIDATE --ptxas-options=-v -arch=sm_35 -gencode=arch=compute_35,code=sm_35  -c cuda_kmeans_all_gpu.cu -o ObjectDir/cuda_kmeans_all_gpu.o
+/usr/local/cuda-11.4/bin/nvcc -O3 -Ihelper_functions -DVALIDATE --ptxas-options=-v -arch=sm_35 -gencode=arch=compute_35,code=sm_35  -c main_gpu.cu -o ObjectDir/main_gpu.o
+g++ -O3 -Ihelper_functions -DVALIDATE -c helper_functions/file_io.c -o ObjectDir/file_io.o
+g++ -O3 -Ihelper_functions -DVALIDATE -c helper_functions/util.c -o ObjectDir/util.o
+g++ -O3 -Ihelper_functions -DVALIDATE -c helper_functions/error.c -o ObjectDir/error.o
+g++ -O3 -Ihelper_functions -DVALIDATE -c helper_functions/alloc.c -o ObjectDir/alloc.o
+g++ -O3 -Ihelper_functions -DVALIDATE -c seq_kmeans.c -o ObjectDir/seq_kmeans.o
+/usr/local/cuda-11.4/bin/nvcc -O3 -Ihelper_functions -DVALIDATE --ptxas-options=-v -arch=sm_35 -gencode=arch=compute_35,code=sm_35  ObjectDir/cuda_kmeans_all_gpu.o ObjectDir/main_gpu.o ObjectDir/file_io.o ObjectDir/util.o ObjectDir/error.o ObjectDir/alloc.o ObjectDir/seq_kmeans.o -o kmeans_cuda_all_gpu  
+g++ -O3 -Ihelper_functions -DVALIDATE -c main_sec.c -o ObjectDir/main_sec.o
+g++ -O3 -Ihelper_functions -DVALIDATE ObjectDir/seq_kmeans.o ObjectDir/main_sec.o ObjectDir/file_io.o ObjectDir/util.o -o kmeans_seq 

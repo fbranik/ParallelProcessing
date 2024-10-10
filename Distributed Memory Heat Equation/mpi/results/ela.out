@@ -1,0 +1,5 @@
+20
+rm jacobi seidelsor redblacksor
+mpicc -O3 -lm -Wall Jacobi_mpi.c utils.c -o jacobi
+mpicc -O3 -lm -Wall GaussSeidelSOR_mpi.c utils.c -o seidelsor
+mpicc -O3 -lm -Wall RedBlackSOR_mpi.c utils.c -o redblacksor

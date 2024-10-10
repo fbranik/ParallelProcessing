@@ -1,0 +1,9 @@
+Jacobi X 2048 Y 2048 Px 1 Py 2 Iter 256 ComputationTime 18.717654 CommsTime 6.056097 ConvTime 0.000000 TotalTime 19.735345 midpoint 0.000000
+GaussSeidel X 2048 Y 2048 Px 1 Py 2 Iter 256 ComputationTime 18.510828 CommsTime 22.128623 ConvTime 0.000000 TotalTime 36.095649 midpoint 0.849018
+RedBlack X 2048 Y 2048 Px 1 Py 2 Iter 256 ComputationTime 42.575932 CommsTime 14.390422 ConvTime 0.000000 TotalTime 43.723952 midpoint 0.000000
+Jacobi X 4096 Y 4096 Px 1 Py 2 Iter 256 ComputationTime 67.263700 CommsTime 18.556575 ConvTime 0.000000 TotalTime 67.676446 midpoint 0.000000
+GaussSeidel X 4096 Y 4096 Px 1 Py 2 Iter 256 ComputationTime 84.173873 CommsTime 87.712887 ConvTime 0.000000 TotalTime 149.639848 midpoint 0.900935
+RedBlack X 4096 Y 4096 Px 1 Py 2 Iter 256 ComputationTime 144.361595 CommsTime 37.664000 ConvTime 0.000000 TotalTime 145.428418 midpoint 0.000000
+Jacobi X 6144 Y 6144 Px 1 Py 2 Iter 256 ComputationTime 177.554027 CommsTime 40.682175 ConvTime 0.000000 TotalTime 178.273314 midpoint 0.000000
+GaussSeidel X 6144 Y 6144 Px 1 Py 2 Iter 256 ComputationTime 119.078676 CommsTime 121.503193 ConvTime 0.000000 TotalTime 188.802553 midpoint 0.942706
+RedBlack X 6144 Y 6144 Px 1 Py 2 Iter 256 ComputationTime 192.457180 CommsTime 85.570387 ConvTime 0.000000 TotalTime 193.387964 midpoint 0.000000
