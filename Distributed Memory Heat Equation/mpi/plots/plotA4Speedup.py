@@ -28,6 +28,8 @@ def autolabel(rects, ax, labelFontSize=12):
 
 
 def speedupPlot(inDictList, title, fileName, xLabels, legendLabels):
+    # function that creates the speedup line plots. The serial times used as a base are taken from the
+    # execution time for 1 process
     fig, ax = plt.subplots()
     fig.set_size_inches(16.5, 16.5)
     for idx, iDict in enumerate(inDictList):
@@ -42,10 +44,8 @@ def speedupPlot(inDictList, title, fileName, xLabels, legendLabels):
 
         x = np.arange(0, 2 * (len(iDict) - 1), step=2)
 
-        if idx>2:
-            ax.plot(x, speedup.values(), '--o', label=legendLabels[idx], color=colorsList[idx-3])
-        # elif idx >4:
-        #     ax.plot(x, speedup.values(), ':>', label=legendLabels[idx], color=colorsList[idx-7])
+        if idx > 2:
+            ax.plot(x, speedup.values(), '--o', label=legendLabels[idx], color=colorsList[idx - 3])
         else:
 
             ax.plot(x, speedup.values(), marker='x', label=legendLabels[idx])
@@ -77,9 +77,9 @@ def barPlot(xLabels, title, barList, legendLabels, fileName, width=1, ylim=[0.00
                               num=len(legendLabels))
 
     for i in range(len(barList)):
-        if i>2:
+        if i > 2:
             tempRects = ax.bar(x + xAxisOffset[i], barList[i], width,
-                               label=legendLabels[i], hatch="xx", color=colorsList[i-3])
+                               label=legendLabels[i], hatch="xx", color=colorsList[i - 3])
         # elif i>6:
         #     tempRects = ax.bar(x + xAxisOffset[i], barList[i], width,
         #                        label=legendLabels[i], hatch="--",color=colorsList[i-7])
@@ -191,90 +191,11 @@ legendLabels = ['Simple task-based Parallel Recursive FW (N=1024, B={})'.format(
                 'Optimized task-based Parallel Recursive FW (N=2048, B={})'.format(bestAdv['2048'][0]),
                 'Optimized task-based Parallel Recursive FW (N=4096, B={})'.format(bestAdv['4096'][0])
                 ]
-#
-# print(dictList)
-#
+
+
 barPlot(labels, 'FW Parallel Runtimes', barList, legendLabels, 'fwAllVersionsBars.png',
         ylim=[0.001, 150], labelFontSize=10, width=(len(legendLabels) - 1) / len(labels))
 
 speedupPlot(dictList, 'FW Parallel Speedup', 'fwAllVersionsSpeedup.png', labels[1:],
             legendLabels=legendLabels)
 
-#
-# fwRevisedTiled = readFWOutFile('fwSrRevisedTiled')
-# print(fwRevisedTiled)
-# dictList = [
-#             fwRevisedTiled[('1024', '64')],
-#             fwRevisedTiled[('2048', '64')],
-#             fwRevisedTiled[('4096', '64')],
-#             fwRevisedTiled[('1024', '32')],
-#
-#             fwRevisedTiled[('1024', '128')],
-#             fwRevisedTiled[('2048', '128')],
-#             fwRevisedTiled[('4096', '128')],
-#
-#             fwRevisedTiled[('1024', '256')],
-#             fwRevisedTiled[('2048', '256')],
-#             fwRevisedTiled[('4096', '256')]
-#             ]
-#
-# labels = ['1 thread', '2 threads', '4 threads', '8 threads', '16 threads', '32 threads', '64 threads']
-# barList = [list(fwRevisedTiled[('1024', '64')].values()),
-#            list(fwRevisedTiled[('2048', '64')].values()),
-#            list(fwRevisedTiled[('4096', '64')].values()),
-#
-#            list(fwRevisedTiled[('1024', '128')].values()),
-#            list(fwRevisedTiled[('2048', '128')].values()),
-#            list(fwRevisedTiled[('4096', '128')].values()),
-#
-#            list(fwRevisedTiled[('1024', '256')].values()),
-#            list(fwRevisedTiled[('2048', '256')].values()),
-#            list(fwRevisedTiled[('4096', '256')].values())
-#
-#            ]
-# # print(barList)
-# # legendLabels = [
-# #                 'Parallel Tiled FW (N=1024, B=64)',
-# #                 'Parallel Tiled FW (N=2048, B=64)',
-# #                 'Parallel Tiled FW (N=4096, B=64)',
-# #
-# #                 'Parallel Tiled FW (N=1024, B=128)',
-# #                 'Parallel Tiled FW (N=2048, B=128)',
-# #                 'Parallel Tiled FW (N=4096, B=128)',
-# #
-# #                 'Parallel Tiled FW (N=1024, B=256)',
-# #                 'Parallel Tiled FW (N=2048, B=256)',
-# #                 'Parallel Tiled FW (N=4096, B=256)',
-# #                 ]
-# #
-# # print(dictList)
-# #
-# # barPlot(labels, 'FW Tiled Parallel Runtimes', barList, legendLabels, 'fwTiledVersionsBars.png',
-# #         ylim=[0.01, 150], labelFontSize=10, width=(len(legendLabels) - 4) / len(labels))
-#
-# # legendLabels = [
-# #                 'Parallel Tiled FW (N=1024, B=64)',
-# #                 'Parallel Tiled FW (N=2048, B=64)',
-# #                 'Parallel Tiled FW (N=4096, B=64)',
-# #                 'Parallel Tiled FW (N=1024, B=32)',
-# #
-# #                 'Parallel Tiled FW (N=1024, B=128)',
-# #                 'Parallel Tiled FW (N=2048, B=128)',
-# #                 'Parallel Tiled FW (N=4096, B=128)',
-# #
-# #                 'Parallel Tiled FW (N=1024, B=256)',
-# #                 'Parallel Tiled FW (N=2048, B=256)',
-# #                 'Parallel Tiled FW (N=4096, B=256)',
-# #                 ]
-# # speedupPlot(dictList, 'FW Tiled Parallel Speedup', 'fwTiledVersionsSpeedup.png', labels[1:],
-# #             legendLabels=legendLabels)
-#
-# # dictList = [
-# #             fwRevisedTiled[('1024', '32')],
-# #             fwRevisedTiled[('4096', '64')]
-# #             ]
-# # legendLabels = ['Parallel Tiled FW (N=1024, B=32)',
-# #                 'Parallel Tiled FW (N=4096, B=64)'
-# #                 ]
-# # speedupPlot(dictList, 'FW Tiled Parallel Speedup', 'fwTiledVersionsExtraSpeedup.png', labels[1:],
-# #             legendLabels=legendLabels)

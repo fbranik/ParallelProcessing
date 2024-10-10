@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
   MPI_Datatype dummy;     //dummy datatype used to align user-defined datatypes in memory
 
   struct timeval tts, ttf, tcs, tcf, tCommsS, tCommsF, tConvS, tConvF;   //Timers: total-> tts,ttf, computation -> tcs,tcf
-  double tConv=0, tComms = 0, ttotal = 0, tcomp = 0, total_time, comp_time, comms_time, conv_time;
+  double tConv = 0, tComms = 0, ttotal = 0, tcomp = 0, total_time, comp_time, comms_time, conv_time;
 
   double **U, **u_current, **u_previous, **swap, *uStart; //Global matrix, local current and previous matrices, pointer to swap between current and previous
 
@@ -60,8 +60,6 @@ int main(int argc, char **argv) {
     }
   }
 
-
-
   //----Allocate global 2D-domain and initialize boundary values----//
   //----Rank 0 holds the global 2D-domain----//
   if (rank == 0) {
@@ -76,9 +74,6 @@ int main(int argc, char **argv) {
   u_current = allocate2d(local[0] + 2, local[1] + 2);
 
   //----Distribute global 2D-domain from rank 0 to all processes----//
-
-  //----Appropriate datatypes are defined here----//
-  /*****The usage of datatypes is optional*****/
 
   //----Datatype definition for the 2D-subdomain on the global matrix----//
 
@@ -110,8 +105,6 @@ int main(int argc, char **argv) {
 
   //----Rank 0 scatters the global matrix----//
 
-  //----Rank 0 scatters the global matrix----//
-
   MPI_Scatterv(uStart, scattercounts, scatteroffset, global_block, &u_previous[1][1], 1, local_block, 0,
                MPI_COMM_WORLD);
   MPI_Scatterv(uStart, scattercounts, scatteroffset, global_block, &u_current[1][1], 1, local_block, 0,
@@ -129,20 +122,15 @@ int main(int argc, char **argv) {
   MPI_Type_commit(&col);
 
 
-  //************************************//
-
-
   //----Find the 4 neighbors with which a process exchanges messages----//
 
   int north, south, east, west;
   MPI_Cart_shift(CART_COMM, 0, 1, &north, &south);
   MPI_Cart_shift(CART_COMM, 1, 1, &west, &east);
 
-  //************************************//
-
   //---Define the iteration ranges per process-----//
 
-  int i_min, i_max, j_min, j_max, numPadding=0;
+  int i_min, i_max, j_min, j_max, numPadding = 0;
   /*Three types of ranges:
     -internal processes
     -boundary processes
@@ -187,59 +175,58 @@ int main(int argc, char **argv) {
   for (t = 0; t < T; t++) {
 #endif
 
-    /*Fill your code here*/
+    swap = u_previous;
+    u_previous = u_current;
+    u_current = swap;
 
-    swap=u_previous;
-    u_previous=u_current;
-    u_current=swap;
     /*Compute and Communicate*/
 
-    /*Add appropriate timers for computation*/
     gettimeofday(&tCommsS, NULL);
-    if (north != MPI_PROC_NULL){
+    if (north != MPI_PROC_NULL) {
       // send my upper  row to northern neighbour
       // get the lowest row of northern neighbour (use ghost row)
       MPI_Sendrecv(&u_previous[1][1], local[1], MPI_DOUBLE, north, 0,
                    &u_previous[0][1], local[1], MPI_DOUBLE, north, 0,
-                   MPI_COMM_WORLD, &status );
+                   MPI_COMM_WORLD, &status);
     }
 
-    if (west != MPI_PROC_NULL){
+    if (west != MPI_PROC_NULL) {
       // send my first column to western neighbour
       // get the last  column of western neighbour (use ghost col)
       MPI_Sendrecv(&u_previous[1][1], 1, col, west, 0,
                    &u_previous[1][0], 1, col, west, 0,
-                   MPI_COMM_WORLD, &status );
+                   MPI_COMM_WORLD, &status);
     }
 
-    if (south != MPI_PROC_NULL){
+    if (south != MPI_PROC_NULL) {
       // send my lowest row to southern neighbour
       // get the upper  row of southern neighbour (use ghost row)
-      MPI_Sendrecv(&u_previous[local[0]][1],   local[1], MPI_DOUBLE, south, 0,
-                   &u_previous[local[0]+1][1], local[1], MPI_DOUBLE, south, 0,
-                   MPI_COMM_WORLD, &status );
+      MPI_Sendrecv(&u_previous[local[0]][1], local[1], MPI_DOUBLE, south, 0,
+                   &u_previous[local[0] + 1][1], local[1], MPI_DOUBLE, south, 0,
+                   MPI_COMM_WORLD, &status);
     }
 
-    if (east != MPI_PROC_NULL){
+    if (east != MPI_PROC_NULL) {
       // send my last  column to eastern neighbour
       // get the first column of eastern neighbour (use ghost col)
-      MPI_Sendrecv(&u_previous[1][local[1]],   1, col, east, 0,
-                   &u_previous[1][local[1]+1], 1, col, east, 0,
-                   MPI_COMM_WORLD, &status );
+      MPI_Sendrecv(&u_previous[1][local[1]], 1, col, east, 0,
+                   &u_previous[1][local[1] + 1], 1, col, east, 0,
+                   MPI_COMM_WORLD, &status);
     }
     gettimeofday(&tCommsF, NULL);
 
     gettimeofday(&tcs, NULL);
 
-    for (i=i_min;i<i_max;i++)
-      for (j=j_min;j<j_max;j++)
-        u_current[i][j]=(u_previous[i-1][j]+u_previous[i+1][j]+u_previous[i][j-1]+u_previous[i][j+1])/4.0;
+    for (i = i_min; i < i_max; i++)
+      for (j = j_min; j < j_max; j++)
+        u_current[i][j] =
+                (u_previous[i - 1][j] + u_previous[i + 1][j] + u_previous[i][j - 1] + u_previous[i][j + 1]) / 4.0;
 
     gettimeofday(&tcf, NULL);
 
-    tcomp += (tcf.tv_sec-tcs.tv_sec)+(tcf.tv_usec-tcs.tv_usec)*0.000001;
+    tcomp += (tcf.tv_sec - tcs.tv_sec) + (tcf.tv_usec - tcs.tv_usec) * 0.000001;
 
-    tComms+= (tCommsF.tv_sec-tCommsS.tv_sec)+(tCommsF.tv_usec-tCommsS.tv_usec)*0.000001;
+    tComms += (tCommsF.tv_sec - tCommsS.tv_sec) + (tCommsF.tv_usec - tCommsS.tv_usec) * 0.000001;
 
 #ifdef TEST_CONV
     if (t%C==0) {
@@ -254,11 +241,6 @@ int main(int argc, char **argv) {
       tConv += (tConvF.tv_sec-tConvS.tv_sec)+(tConvF.tv_usec-tConvS.tv_usec)*0.000001;
   }
 #endif
-
-
-    //************************************//
-
-
 
   }
   gettimeofday(&ttf, NULL);
@@ -283,8 +265,10 @@ int main(int argc, char **argv) {
   MPI_Gatherv(&u_current[1][1], 1, local_block, uStart, scattercounts, scatteroffset, global_block, 0, MPI_COMM_WORLD);
 
   if (rank == 0) {
-    printf("Jacobi X %d Y %d Px %d Py %d Iter %d ComputationTime %lf CommsTime %lf ConvTime %lf TotalTime %lf midpoint %lf\n", global[0],
-           global[1], grid[0], grid[1], t, comp_time, comms_time, conv_time, total_time, U[global[0] / 2][global[1] / 2]);
+    printf("Jacobi X %d Y %d Px %d Py %d Iter %d ComputationTime %lf CommsTime %lf ConvTime %lf TotalTime %lf midpoint %lf\n",
+           global[0],
+           global[1], grid[0], grid[1], t, comp_time, comms_time, conv_time, total_time,
+           U[global[0] / 2][global[1] / 2]);
 
 #ifdef PRINT_RESULTS
     char * s=malloc(50*sizeof(char));

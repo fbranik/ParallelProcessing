@@ -1,10 +1,13 @@
-# Parallel Processing Systems Exercises
+# Distributed Memory Heat Equation Solutions
 
-Code, Documents and Plotting/Data Processing Scripts for the Parallel Processing Systems Lab Exercises. Completed at ECE NTUA.
+Parallel implementations of various methods for solving the heat equation. The code 
+included in the _mpi_ directory is designed to run on a computer cluster. For the
+context of the course, measurements were taken from 8 8-core nodes.
 
-| Directory                        | Comment                                                                                            |
-|----------------------------------|----------------------------------------------------------------------------------------------------|
-| Distributed Memory Heat Equation | Parallel Versions of the Jacobi, Gauss-Seidel SOR and Red-Black SOR methods, implemented Using MPI |
-| GPU K-Means                      | Various GPU Implementations of the K-Means Algorithm, developed with CUDA                          |
-| Shared Memory Floyd-Warshall     | Various Parallel Versions of the Floyd-Warshall algorithm, implemented Using OpenMP                |
-| Shared Memory K-Means            | Various Parallel Versions of the K-Means algorithm, implemented Using OpenMP                       |
+| Directory | Comment                                                      |
+|-----------|--------------------------------------------------------------|
+| figures   | Various Figures to accompany the code                        |
+| mpi       | Parallel Versions of the heat equation methods               |
+| serial    | Serial Versions of the heat equation methods, used as a base |
+
+### Jacobi Method

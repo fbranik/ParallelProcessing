@@ -13,10 +13,10 @@ int main(int argc, char **argv) {
   int i, j, t;
   int global_converged = 0, converged = 0; //flags for convergence, global and per process
   MPI_Datatype dummy;     //dummy datatype used to align user-defined datatypes in memory
-  double omega; 			//relaxation factor - useless for Jacobi
+  double omega;      //relaxation factor - useless for Jacobi
 
   struct timeval tts, ttf, tcs, tcf, tCommsS, tCommsF, tConvS, tConvF;   //Timers: total-> tts,ttf, computation -> tcs,tcf
-  double tConv=0, tComms = 0, ttotal = 0, tcomp = 0, total_time, comp_time, comms_time, conv_time;
+  double tConv = 0, tComms = 0, ttotal = 0, tcomp = 0, total_time, comp_time, comms_time, conv_time;
 
   double **U, **u_current, **u_previous, **swap, *uStart; //Global matrix, local current and previous matrices, pointer to swap between current and previous
 
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
   }
 
   //Initialization of omega
-  omega=2.0/(1+sin(3.14/global[0]));
+  omega = 2.0 / (1 + sin(3.14 / global[0]));
 
   //----Allocate global 2D-domain and initialize boundary values----//
   //----Rank 0 holds the global 2D-domain----//
@@ -78,9 +78,6 @@ int main(int argc, char **argv) {
   u_current = allocate2d(local[0] + 2, local[1] + 2);
 
   //----Distribute global 2D-domain from rank 0 to all processes----//
-
-  //----Appropriate datatypes are defined here----//
-  /*****The usage of datatypes is optional*****/
 
   //----Datatype definition for the 2D-subdomain on the global matrix----//
 
@@ -112,8 +109,6 @@ int main(int argc, char **argv) {
 
   //----Rank 0 scatters the global matrix----//
 
-  //----Rank 0 scatters the global matrix----//
-
   MPI_Scatterv(uStart, scattercounts, scatteroffset, global_block, &u_previous[1][1], 1, local_block, 0,
                MPI_COMM_WORLD);
   MPI_Scatterv(uStart, scattercounts, scatteroffset, global_block, &u_current[1][1], 1, local_block, 0,
@@ -122,16 +117,11 @@ int main(int argc, char **argv) {
   if (rank == 0)
     free2d(U);
 
-
-
   //----Define datatypes or allocate buffers for message passing----//
   MPI_Datatype col;
   MPI_Type_vector(local[0], 1, local[1] + 2, MPI_DOUBLE, &dummy);
   MPI_Type_create_resized(dummy, 0, sizeof(double), &col);
   MPI_Type_commit(&col);
-
-
-  //************************************//
 
 
   //----Find the 4 neighbors with which a process exchanges messages----//
@@ -140,11 +130,10 @@ int main(int argc, char **argv) {
   MPI_Cart_shift(CART_COMM, 0, 1, &north, &south);
   MPI_Cart_shift(CART_COMM, 1, 1, &west, &east);
 
-  //************************************//
 
   //---Define the iteration ranges per process-----//
 
-  int i_min, i_max, j_min, j_max, numPadding=0;
+  int i_min, i_max, j_min, j_max, numPadding = 0;
 
   /*Three types of ranges:
     -internal processes
@@ -179,7 +168,7 @@ int main(int argc, char **argv) {
   }
 
   MPI_Request requests[8];
-  MPI_Status  reqStatus[8];
+  MPI_Status reqStatus[8];
   int requestsIdx = 0;
 
   MPI_Status status;
@@ -194,16 +183,14 @@ int main(int argc, char **argv) {
   for (t = 0; t < T; t++) {
 #endif
 
-    /*Fill your code here*/
-    requestsIdx = 0 ;
-    swap=u_previous;
-    u_previous=u_current;
-    u_current=swap;
+    requestsIdx = 0;
+    swap = u_previous;
+    u_previous = u_current;
+    u_current = swap;
     /*Compute and Communicate*/
 
-    /*Add appropriate timers for computation*/
     gettimeofday(&tCommsS, NULL);
-    if (north != MPI_PROC_NULL){
+    if (north != MPI_PROC_NULL) {
       // send my previous upper row to northern neighbour
       MPI_Isend(&u_previous[1][1], local[1], MPI_DOUBLE, north, 0,
                 MPI_COMM_WORLD, &requests[requestsIdx]);
@@ -215,7 +202,7 @@ int main(int argc, char **argv) {
       requestsIdx++;
     }
 
-    if (west != MPI_PROC_NULL){
+    if (west != MPI_PROC_NULL) {
       // send my previous first column to western neighbour
       MPI_Isend(&u_previous[1][1], 1, col, west, 0,
                 MPI_COMM_WORLD, &requests[requestsIdx]);
@@ -228,17 +215,17 @@ int main(int argc, char **argv) {
 
     }
 
-    if (south != MPI_PROC_NULL){
+    if (south != MPI_PROC_NULL) {
       // get the previous upper row of southern neighbour (use ghost row)
-      MPI_Irecv(&u_previous[local[0]+1][1], local[1], MPI_DOUBLE, south, 0,
-                   MPI_COMM_WORLD, &requests[requestsIdx]);
+      MPI_Irecv(&u_previous[local[0] + 1][1], local[1], MPI_DOUBLE, south, 0,
+                MPI_COMM_WORLD, &requests[requestsIdx]);
       requestsIdx++;
     }
 
-    if (east != MPI_PROC_NULL){
+    if (east != MPI_PROC_NULL) {
       // get the previous first column of eastern neighbour (use ghost col)
-      MPI_Irecv(&u_previous[1][local[1]+1], 1, col, east, 0,
-                   MPI_COMM_WORLD, &requests[requestsIdx]);
+      MPI_Irecv(&u_previous[1][local[1] + 1], 1, col, east, 0,
+                MPI_COMM_WORLD, &requests[requestsIdx]);
       requestsIdx++;
     }
 
@@ -247,27 +234,29 @@ int main(int argc, char **argv) {
     MPI_Waitall(requestsIdx, requests, reqStatus);
 
     gettimeofday(&tCommsF, NULL);
-    tComms+= (tCommsF.tv_sec-tCommsS.tv_sec)+(tCommsF.tv_usec-tCommsS.tv_usec)*0.000001;
+    tComms += (tCommsF.tv_sec - tCommsS.tv_sec) + (tCommsF.tv_usec - tCommsS.tv_usec) * 0.000001;
 
     gettimeofday(&tcs, NULL);
 
-    for (i=i_min;i<i_max;i++)
-      for (j=j_min;j<j_max;j++)
-        u_current[i][j]=u_previous[i][j]+(u_current[i-1][j]+u_previous[i+1][j]+u_current[i][j-1]+u_previous[i][j+1]-4*u_previous[i][j])*omega/4.0;
+    for (i = i_min; i < i_max; i++)
+      for (j = j_min; j < j_max; j++)
+        u_current[i][j] = u_previous[i][j] +
+                          (u_current[i - 1][j] + u_previous[i + 1][j] + u_current[i][j - 1] + u_previous[i][j + 1] -
+                           4 * u_previous[i][j]) * omega / 4.0;
 
     gettimeofday(&tcf, NULL);
 
     gettimeofday(&tCommsS, NULL);
     // reset request index to 0
     requestsIdx = 0;
-    if (south != MPI_PROC_NULL){
+    if (south != MPI_PROC_NULL) {
       // send my current lowest row to southern neighbour
       MPI_Isend(&u_current[local[0]][1], local[1], MPI_DOUBLE, south, 0,
                 MPI_COMM_WORLD, &requests[requestsIdx]);
       requestsIdx++;
     }
 
-    if (east != MPI_PROC_NULL){
+    if (east != MPI_PROC_NULL) {
       // send my current last column of eastern neighbour
       MPI_Isend(&u_current[1][local[1]], 1, col, east, 0,
                 MPI_COMM_WORLD, &requests[requestsIdx]);
@@ -276,9 +265,9 @@ int main(int argc, char **argv) {
     MPI_Waitall(requestsIdx, requests, reqStatus);
     gettimeofday(&tCommsF, NULL);
 
-    tcomp += (tcf.tv_sec-tcs.tv_sec)+(tcf.tv_usec-tcs.tv_usec)*0.000001;
+    tcomp += (tcf.tv_sec - tcs.tv_sec) + (tcf.tv_usec - tcs.tv_usec) * 0.000001;
 
-    tComms+= (tCommsF.tv_sec-tCommsS.tv_sec)+(tCommsF.tv_usec-tCommsS.tv_usec)*0.000001;
+    tComms += (tCommsF.tv_sec - tCommsS.tv_sec) + (tCommsF.tv_usec - tCommsS.tv_usec) * 0.000001;
 
 #ifdef TEST_CONV
     if (t%C==0) {
@@ -293,11 +282,6 @@ int main(int argc, char **argv) {
       tConv += (tConvF.tv_sec-tConvS.tv_sec)+(tConvF.tv_usec-tConvS.tv_usec)*0.000001;
   }
 #endif
-
-
-    //************************************//
-
-
 
   }
   gettimeofday(&ttf, NULL);
@@ -322,8 +306,10 @@ int main(int argc, char **argv) {
   MPI_Gatherv(&u_current[1][1], 1, local_block, uStart, scattercounts, scatteroffset, global_block, 0, MPI_COMM_WORLD);
 
   if (rank == 0) {
-    printf("GaussSeidel X %d Y %d Px %d Py %d Iter %d ComputationTime %lf CommsTime %lf ConvTime %lf TotalTime %lf midpoint %lf\n", global[0],
-           global[1], grid[0], grid[1], t, comp_time, comms_time, conv_time, total_time, U[global[0] / 2][global[1] / 2]);
+    printf("GaussSeidel X %d Y %d Px %d Py %d Iter %d ComputationTime %lf CommsTime %lf ConvTime %lf TotalTime %lf midpoint %lf\n",
+           global[0],
+           global[1], grid[0], grid[1], t, comp_time, comms_time, conv_time, total_time,
+           U[global[0] / 2][global[1] / 2]);
 
 #ifdef PRINT_RESULTS
     char * s=malloc(50*sizeof(char));
