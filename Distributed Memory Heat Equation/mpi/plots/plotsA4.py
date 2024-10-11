@@ -264,7 +264,7 @@ versionLabels = ['Jacobi', 'Gauss Seidel SOR', 'Red Black SOR']
 legendLabels = ['Computation Time', 'Communications Time']
 
 barPlot(labels, 'Parallel Heat Equation solution (6144X6144, no Convergence Test, T=256)', barList, legendLabels,
-        'conv6144.png',
+        'noConv6144.png',
         ylim=[0.1, 400], labelFontSize=10, width=1.2, xxLabels=versionLabels)
 
 legendLabels = ['Total Time']
