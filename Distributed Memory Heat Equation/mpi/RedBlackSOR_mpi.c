@@ -121,7 +121,6 @@ int main(int argc, char **argv) {
   if (rank == 0)
     free2d(U);
 
-
   //----Define datatypes or allocate buffers for message passing----//
 
   // colEveryOther gives only the red or black (depending on the starting position)
@@ -336,7 +335,6 @@ int main(int argc, char **argv) {
     gettimeofday(&tcf, NULL);
 
     tcomp += (tcf.tv_sec - tcs.tv_sec) + (tcf.tv_usec - tcs.tv_usec) * 0.000001;
-
 
 #ifdef TEST_CONV
     if (t%C==0) {
