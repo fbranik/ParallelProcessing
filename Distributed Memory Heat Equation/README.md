@@ -24,7 +24,7 @@ For each time iteration of this method, some processes require neighbouring data
 iteration. This creates some computation/communication dependencies between processes and requires non-blocking
 communication to be implemented. Schematically the above can be summed up in the following figure.
 
-<img src="figures/gsFig.png" width="1000">
+<img src="figures/gsFig.png" width="500">
 
 Since the communication dependency is in the north and west, the processes in the borders of these directions are the
 first to complete the needed computations (since they have no dependencies). This creates a kind of 'wave' of completed
@@ -39,7 +39,7 @@ elements is done, processes need to update their black elements. For this, they 
 was just computed. This pattern of communication and computation for each time iteration, can be seen schematically in
 the following figure.
 
-<img src="figures/rbFig.png" width="1000">
+<img src="figures/rbFig.png" width="500">
 
 To easily implement this pattern using MPI, custom datatypes where used. Specifically, one of them
 includes every other element of a column, while the second one includes every other element of a row. This was done
