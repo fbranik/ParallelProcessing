@@ -24,7 +24,7 @@ For each time iteration of this method, some processes require neighbouring data
 iteration. This creates some computation/communication dependencies between processes and requires non-blocking
 communication to be implemented. Schematically the above can be summed up in the following figure.
 
-![Alt text](figures/gsFig.png?raw=true | width=100)
+![](figures/gsFig.png?raw=true|width=10)
 
 Since the communication dependency is in the north and west, the processes in the borders of these directions are the
 first to complete the needed computations (since they have no dependencies). This creates a kind of 'wave' of completed
