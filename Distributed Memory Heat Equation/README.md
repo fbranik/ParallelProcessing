@@ -11,7 +11,7 @@ context of the course, measurements were taken from 8 8-core nodes.
 | serial    | Serial Versions of the heat equation methods, used as a base |
 
 ### Jacobi Method
-The parallelization of the jacobi method is fairly straightforward. It requires breaking down the 2D data-grid into
+The parallelization of the Jacobi method is fairly straightforward. It requires breaking down the 2D data-grid into
 N smaller grids, where N is the number of processes. To achieve this, a 2D cartesian communicator is used. 
 Each process is responsible for the computations on each subgrid, but there is also a need for communication on each
 time iteration. This happens between neighbouring processes across the 4 directions of the cartesian communicator 

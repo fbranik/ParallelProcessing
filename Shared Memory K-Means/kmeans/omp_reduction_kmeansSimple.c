@@ -49,8 +49,8 @@ void kmeans(float *objects,          /* in: [numObjs][numCoords] */
             int *membership,       /* out: [numObjs] */
             float *clusters)         /* out: [numClusters][numCoords] */
 {
-  int i, j;
-  int index, avg, loop = 0;
+  int i, j, k;
+  int index, loop = 0;
   double timing = 0;
 
   float delta;          // fraction of objects whose clusters change in each loop
@@ -59,7 +59,7 @@ void kmeans(float *objects,          /* in: [numObjs][numCoords] */
   int nthreads;         // no. threads
 
   nthreads = omp_get_max_threads();
-  printf("OpenMP Kmeans - Naive\t(number of threads: %d)\n", nthreads);
+  printf("OpenMP Kmeans - Reduction\t(number of threads: %d)\n", nthreads);
 
   // initialize membership
   for (i = 0; i < numObjs; i++)
@@ -69,10 +69,32 @@ void kmeans(float *objects,          /* in: [numObjs][numCoords] */
   newClusterSize = (typeof(newClusterSize)) calloc(numClusters, sizeof(*newClusterSize));
   newClusters = (typeof(newClusters)) calloc(numClusters * numCoords, sizeof(*newClusters));
 
-  timing = wtime();
+  // Each thread calculates new centers using a private space. After that, thread 0 does an array reduction on them.
+  int *local_newClusterSize[nthreads];  // [nthreads][numClusters]
+  float *local_newClusters[nthreads];   // [nthreads][numClusters][numCoords]
 
+  // Initialize local (per-thread) arrays (and later collect result on global arrays)
+
+  for (i = 0; i < nthreads; i++) {
+    //int thisThreadId = omp_get_thread_num();
+    local_newClusterSize[i] = (typeof(*local_newClusterSize)) calloc(numClusters, sizeof(**local_newClusterSize));
+    local_newClusters[i] = (typeof(*local_newClusters)) calloc(numClusters * numCoords, sizeof(**local_newClusters));
+  }
+  int iThread;
+  for (iThread = 0; iThread < nthreads; iThread++) {
+    for (i = 0; i < numClusters; i++) {
+      for (j = 0; j < numCoords; j++) {
+        local_newClusters[iThread][i * numCoords + j] = 0.0;
+      }
+      local_newClusterSize[iThread][i] = 0;
+    }
+  }
+
+
+  timing = wtime();
   do {
     // before each loop, set cluster data to 0
+
     for (i = 0; i < numClusters; i++) {
       for (j = 0; j < numCoords; j++)
         newClusters[i * numCoords + j] = 0.0;
@@ -81,31 +103,53 @@ void kmeans(float *objects,          /* in: [numObjs][numCoords] */
 
     delta = 0.0;
 
-    // this for loop can be done in parallel since there are no data dependencies
-    #pragma omp parallel for private(index) reduction(+:delta)
-    for (i = 0; i < numObjs; i++) {
-      // find the array index of nearest cluster center
-      index = find_nearest_cluster(numClusters, numCoords, &objects[i * numCoords], clusters);
+    /*
+     * Initiliaze local cluster data to zero (separate for each thread)
+     */
 
-      // if membership changes, increase delta by 1
-      if (membership[i] != index)
-        delta += 1.0;
+    #pragma omp parallel shared(objects, clusters, membership, local_newClusters, local_newClusterSize)
+    {
+      int thisThreadId = omp_get_thread_num();
 
-      // assign the membership to object i
-      membership[i] = index;
+      #pragma omp for private(i, j, index) reduction(+:delta)
+      for (i = 0; i < numObjs; i++) {
+        // find the array index of nearest cluster center
+        index = find_nearest_cluster(numClusters, numCoords, &objects[i * numCoords], clusters);
 
-      // update new cluster centers : sum of objects located within, ensure access is atomic to avoid errors
-      #pragma omp atomic
-      newClusterSize[index]++;
-      for (j = 0; j < numCoords; j++)
-        #pragma omp atomic
-        newClusters[index * numCoords + j] += objects[i * numCoords + j];
+        // if membership changes, increase delta by 1
+        if (membership[i] != index)
+          delta += 1.0;
+
+        // assign the membership to object i
+        membership[i] = index;
+
+        // update new cluster centers : sum of all objects located within (average will be performed later)
+
+        local_newClusterSize[thisThreadId][index]++;
+        for (j = 0; j < numCoords; j++)
+          local_newClusters[thisThreadId][index * numCoords + j] += objects[i * numCoords + j];
+      }
     }
 
+    /*
+     * Reduction of cluster data from local arrays to shared.
+     * This operation will be performed by one thread
+     */
+
+    for (i = 0; i < numClusters; i++) {
+      for (iThread = 0; iThread < nthreads; iThread++) {
+        newClusterSize[i] += local_newClusterSize[iThread][i];
+        local_newClusterSize[iThread][i] = 0;
+        for (j = 0; j < numCoords; j++) {
+          newClusters[i * numCoords + j] += local_newClusters[iThread][i * numCoords + j];
+          local_newClusters[iThread][i * numCoords + j] = 0.0;
+        }
+      }
+    }
     // average the sum and replace old cluster centers with newClusters
     for (i = 0; i < numClusters; i++) {
       for (j = 0; j < numCoords; j++) {
-        if (newClusterSize[i] > 0)
+        if (newClusterSize[i] > 1)
           clusters[i * numCoords + j] = newClusters[i * numCoords + j] / newClusterSize[i];
       }
     }
@@ -114,12 +158,16 @@ void kmeans(float *objects,          /* in: [numObjs][numCoords] */
     delta /= numObjs;
 
     loop++;
-    printf("\r\tcompleted loop %d", loop);
+    printf("\r\tcompleted loop %d (%f, %f)", loop, delta, threshold);
     fflush(stdout);
-  } while (delta > threshold && loop < 10);
+  } while (delta > threshold && loop < loop_threshold);
   timing = wtime() - timing;
   printf("\n        nloops = %3d   (total = %7.4fs)  (per loop = %7.4fs)\n", loop, timing, timing / loop);
 
+  for (k = 0; k < nthreads; k++) {
+    free(local_newClusterSize[k]);
+    free(local_newClusters[k]);
+  }
   free(newClusters);
   free(newClusterSize);
 }

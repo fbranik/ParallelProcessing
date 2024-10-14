@@ -1,63 +1,0 @@
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-dataset_size = 256.00 MB    numObjs = 67108864    numCoords = 1    numClusters = 4
-
-OpenMP Kmeans - Reduction	(number of threads: 1)
-	completed loop 1	completed loop 2	completed loop 3	completed loop 4	completed loop 5	completed loop 6	completed loop 7	completed loop 8	completed loop 9	completed loop 10
-        nloops =  10   (total = 11.2752s)  (per loop =  1.1275s)
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-dataset_size = 256.00 MB    numObjs = 67108864    numCoords = 1    numClusters = 4
-
-OpenMP Kmeans - Reduction	(number of threads: 2)
-	completed loop 1	completed loop 2	completed loop 3	completed loop 4	completed loop 5	completed loop 6	completed loop 7	completed loop 8	completed loop 9	completed loop 10
-        nloops =  10   (total = 30.9046s)  (per loop =  3.0905s)
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-dataset_size = 256.00 MB    numObjs = 67108864    numCoords = 1    numClusters = 4
-
-OpenMP Kmeans - Reduction	(number of threads: 4)
-	completed loop 1	completed loop 2	completed loop 3	completed loop 4	completed loop 5	completed loop 6	completed loop 7	completed loop 8	completed loop 9	completed loop 10
-        nloops =  10   (total = 40.4292s)  (per loop =  4.0429s)
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-dataset_size = 256.00 MB    numObjs = 67108864    numCoords = 1    numClusters = 4
-
-OpenMP Kmeans - Reduction	(number of threads: 8)
-	completed loop 1	completed loop 2	completed loop 3	completed loop 4	completed loop 5	completed loop 6	completed loop 7	completed loop 8	completed loop 9	completed loop 10
-        nloops =  10   (total = 42.9783s)  (per loop =  4.2978s)
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-dataset_size = 256.00 MB    numObjs = 67108864    numCoords = 1    numClusters = 4
-
-OpenMP Kmeans - Reduction	(number of threads: 16)
-	completed loop 1	completed loop 2	completed loop 3	completed loop 4	completed loop 5	completed loop 6	completed loop 7	completed loop 8	completed loop 9	completed loop 10
-        nloops =  10   (total = 91.8529s)  (per loop =  9.1853s)
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-dataset_size = 256.00 MB    numObjs = 67108864    numCoords = 1    numClusters = 4
-
-OpenMP Kmeans - Reduction	(number of threads: 32)
-	completed loop 1	completed loop 2	completed loop 3	completed loop 4	completed loop 5	completed loop 6	completed loop 7	completed loop 8	completed loop 9	completed loop 10
-        nloops =  10   (total = 130.2558s)  (per loop = 13.0256s)
-
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-dataset_size = 256.00 MB    numObjs = 67108864    numCoords = 1    numClusters = 4
-
-OpenMP Kmeans - Reduction	(number of threads: 64)
-	completed loop 1	completed loop 2	completed loop 3	completed loop 4	completed loop 5	completed loop 6	completed loop 7	completed loop 8	completed loop 9	completed loop 10
-        nloops =  10   (total = 81.5184s)  (per loop =  8.1518s)
-

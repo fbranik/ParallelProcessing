@@ -3,11 +3,12 @@
 
 #include <assert.h>
 
-void kmeans(float * objects, int numCoords, int numObjs, int numClusters, float threshold, long loop_threshold, int *membership, float * clusters);
+void kmeans(float **objects, int numCoords, int numObjs, int numClusters, float threshold, long loop_threshold,
+            int *membership, float *clusters);
 
-float * dataset_generation(int numObjs, int numCoords);
+float **dataset_generation(int numObjs, int numCoords);
 
-int check_repeated_clusters(int, int, float*);
+int check_repeated_clusters(int, int, float *);
 
 double wtime(void);
 

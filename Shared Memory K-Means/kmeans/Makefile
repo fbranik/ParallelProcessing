@@ -6,7 +6,7 @@ CFLAGS = -Wall -Wextra -Wno-unused -O3
 
 OMPFLAGS = -fopenmp $(CFLAGS)
 
-LDFLAGS = 
+LDFLAGS = -fopenmp  
 
 H_FILES = kmeans.h
 
@@ -35,9 +35,7 @@ omp_reduction_kmeans.o: omp_reduction_kmeans.c $(COMM_SRC) $(H_FILES)
 	$(CC) $(OMPFLAGS) -c $< -o $@
 
 file_io.o: file_io.c
-	$(CC) $(CFLAGS) -c $< -o $@
-# Hint : why is OMPFLAGS used here?	(when using it, need to include -fopenmp to LDFLAGS too)
-# 	$(CC) $(OMPFLAGS) -c $< -o $@
+	$(CC) $(OMPFLAGS) -c $< -o $@
 
 util.o: util.c
 	$(CC) $(CFLAGS) -c $< -o $@
