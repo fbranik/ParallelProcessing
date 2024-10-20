@@ -158,54 +158,46 @@ thread-local data can be allocated and initialized by the threads that are going
 
 ```c
 // Initialize local (per-thread) arrays (and later collect result on global arrays)
-#pragma
-omp parallel
+#pragma omp parallel
 {
-int numObjsPerThread = numObjs / omp_get_max_threads();
-// calloc in parallel per thread to take advantage of the first-touch policy
-int thisThreadId = omp_get_thread_num();
-local_newClusterSize[thisThreadId] = (typeof(*local_newClusterSize)) calloc(numClusters,
-sizeof(**local_newClusterSize));
-local_newClusters[thisThreadId] = (typeof(*local_newClusters)) calloc(numClusters * numCoords,
-sizeof(**local_newClusters));
+  int numObjsPerThread = numObjs / omp_get_max_threads();
+  // calloc in parallel per thread to take advantage of the first-touch policy
+  int thisThreadId = omp_get_thread_num();
+  
+  local_newClusterSize[thisThreadId] = (typeof(*local_newClusterSize)) calloc(numClusters, sizeof(**local_newClusterSize));
+  
+  local_newClusters[thisThreadId] = (typeof(*local_newClusters)) calloc(numClusters * numCoords, sizeof(**local_newClusters));
 }
 
 ...
 
-#pragma
-omp parallel shared(objects, clusters, membership, local_newClusters, local_newClusterSize)
+#pragma omp parallel shared(objects, clusters, membership, local_newClusters, local_newClusterSize)
 {
-int thisThreadId = omp_get_thread_num();
-for (i = 0; i < numClusters; i++) {
-for (j = 0; j < numCoords; j++) {
-local_newClusters[thisThreadId][i * numCoords + j] = 0.0;
-}
-local_newClusterSize[thisThreadId][i] = 0;
-}
+  int thisThreadId = omp_get_thread_num();
+  for (i = 0; i < numClusters; i++) {
+    for (j = 0; j < numCoords; j++) {
+      local_newClusters[thisThreadId][i * numCoords + j] = 0.0;
+    }
+    local_newClusterSize[thisThreadId][i] = 0;
+  }
 
-#pragma
-omp for
-private(i, j, index) reduction(+:delta) schedule(static, numObjsPerThread)
-for (i = 0; i < numObjs; i++) {
-// find the array index of nearest cluster center
-index = find_nearest_cluster(numClusters, numCoords, &objects[i * numCoords], clusters);
-
-// if membership changes, increase delta by 1
-if (membership[i] != index)
-delta += 1.0;
-
-// assign the membership to object i
-membership[i] = index;
-
-// update new cluster centers : sum of all objects located within (average will be performed later)
-/*
- * Collect cluster data in local arrays (local to each thread)
- * Replace global arrays with local per-thread
- */
-local_newClusterSize[thisThreadId][index]++;
-for (j = 0; j < numCoords; j++)
-local_newClusters[thisThreadId][index * numCoords + j] += objects[i * numCoords + j];
-}
+  #pragma omp for private(i, j, index) reduction(+:delta) schedule(static, numObjsPerThread)
+  for (i = 0; i < numObjs; i++) {
+    // find the array index of nearest cluster center
+    index = find_nearest_cluster(numClusters, numCoords, &objects[i * numCoords], clusters);
+  
+    // if membership changes, increase delta by 1
+    if (membership[i] != index)
+    delta += 1.0;
+  
+    // assign the membership to object i
+    membership[i] = index;
+  
+    // update new cluster centers : sum of all objects located within (average will be performed later)
+    local_newClusterSize[thisThreadId][index]++;
+    for (j = 0; j < numCoords; j++)
+      local_newClusters[thisThreadId][index * numCoords + j] += objects[i * numCoords + j];
+    }
 }
 ```
 
