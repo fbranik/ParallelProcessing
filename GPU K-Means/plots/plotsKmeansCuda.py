@@ -19,7 +19,7 @@ def autolabel(rects, ax, labelFontSize=12):
     for bar in rects:
         if bar.get_height() > 0.3:
             ax.text(bar.get_x() + bar.get_width() / 2,
-                    bar.get_height() / 3 + 0.98*bar.get_y(),
+                    bar.get_height() / 3 + 0.98 * bar.get_y(),
                     round(bar.get_height(), 2), ha='center',
                     color='black', rotation=90, size=9)
         # height = rect.get_height()
@@ -81,8 +81,8 @@ def barPlot(xLabels, title, barList, legendLabels, fileName, width=1, ylim=[0.00
 
     for i in range(len(barList)):
         tTransfers = np.array([item[0] for item in barList[i]])
-        tGPU       = np.array([item[1] for item in barList[i]])
-        tCPU       = np.array([item[2] for item in barList[i]])
+        tGPU = np.array([item[1] for item in barList[i]])
+        tCPU = np.array([item[2] for item in barList[i]])
         tempList = np.array([tGPU, tCPU, tTransfers])
         for j, toPlot in enumerate(tempList):
             if j == 0:
@@ -97,9 +97,9 @@ def barPlot(xLabels, title, barList, legendLabels, fileName, width=1, ylim=[0.00
     ax.set_title(title)
     ax.set_yscale('log')
     ax.set_xticks(xx)
-    xxLabels = xxLabels*6
+    xxLabels = xxLabels * 6
     ax.xaxis.set_tick_params(labelsize=10)
-    ax.set_xticklabels(xxLabels, rotation = 90)
+    ax.set_xticklabels(xxLabels, rotation=90)
     # box = ax.get_position()
     # # ax.set_position([box.x0, box.y0 + box.height * 0.1,
     # #                  box.width, box.height * 0.9])

@@ -7,13 +7,13 @@
 #PBS -o make_kmeans.out
 #PBS -e make_kmeans.err
 
-## How many machines should we get? 
+## How many machines should we get?
 #PBS -l nodes=1:ppn=1
 
 ##How long should the job run for?
 #PBS -l walltime=00:10:00
 
-## Start 
+## Start
 ## Run make in the src folder (modify properly)
 
 cd /home/parallel/parlab07/a3

@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2010-2012, Computing Systems Laboratory (CSLab)
  *  Copyright (C) 2010-2012, Vasileios Karakasis
- */ 
+ */
 #ifndef __DECLS_H
 #define __DECLS_H
 
