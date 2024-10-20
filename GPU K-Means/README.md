@@ -231,10 +231,11 @@ __global__ static void update_centroids(int numCoords, int numClusters,
 ### Time Measurements and Plots
 
 <img src="plots/cudaAllVersionsBars16Coords.png" width="1378">
+
 The above plot, shows the execution time for various thread block sizes. Especially for larger blocks, performance is
 significantly improved as the implementations get more complex. This is to be expected, since the more complex versions
 make better use of the available resources. One particular reason for the improvement of performnce in the all GPU
-versions, is the minimization of CPU and Memory Transfers time. This can be seen in the following figure, which shows
-the different timers for all the parallel versions. 
+versions, is the minimization of CPU and Memory Transfers time which present a bottleneck. 
+This can be seen in the following figure, which shows the different timers for all the parallel versions. 
 
 <img src="plots/cudaAllVersionsBars16CoordsAdvTimers.png" width="1382">
