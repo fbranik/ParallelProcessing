@@ -119,7 +119,7 @@ __global__ static void find_nearest_cluster(int numCoords,
     }
   }
   if (threadIdx.x == 0) {
-    // Thread 0 of each block sets the sharerd memory newClusterSize and newClusters to 0.0 (previoulsly done by CPU))
+    // Thread 0 of each block sets the shared memory newClusterSize and newClusters to 0.0 (previously done by CPU))
     memset(shmemNewClusterSize, 0, numClusters * sizeof(int));
     memset(shmemNewClusters, 0, numClusters * numCoords * sizeof(float));
   }

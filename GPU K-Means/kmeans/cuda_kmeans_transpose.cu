@@ -59,7 +59,6 @@ void find_nearest_cluster(int numCoords,
   if (tid < numObjs) {
     int index, i;
     float dist, min_dist;
-
     /* find the cluster id that has min distance to object */
     index = 0;
     min_dist = euclid_dist_2_transpose(numCoords, numObjs, numClusters, objects, deviceClusters, tid, 0);

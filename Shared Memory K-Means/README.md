@@ -237,6 +237,4 @@ for (i = 0; i < numObjs; i++) {
 
 ### Measurements and Plots
 
-#### Execution Times
-
 <img src="plots/allVersionsBars.png" width="500">

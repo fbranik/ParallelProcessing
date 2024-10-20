@@ -22,111 +22,219 @@ The following table highlights the differences between the included versions.
 | cuda_kmeans_all_gpuReduceParallelBlock.cu | Slight improvement on the  cuda_kmeans_all_gpuSharedMemory2D version               |
 
 The sequential code-basis for these parallel implementations is identical to the one shown
-in the [Shared Memory K-Means](../Shared%20Memory%20K-Means/README.md) directory.
+in the [Shared Memory K-Means](../Shared%20Memory%20K-Means/README.md) exercise.
 
 ### [Naive GPU kmeans](kmeans/cuda_kmeans_naive.cu)
 
-As a first approach to parellization, 
+A first approach to parallelization, is matching the computation of _find_nearest_cluster_ for every object in the
+do-while loop, to a thread. The kernel for to achieve this can be seen bellow.
 
 ```c
-// Initialize local (per-thread) arrays (and later collect result on global arrays)
-#pragma
-omp parallel
-{
-int numObjsPerThread = numObjs / omp_get_max_threads();
-// calloc in parallel per thread to take advantage of the first-touch policy
-int thisThreadId = omp_get_thread_num();
-local_newClusterSize[thisThreadId] = (typeof(*local_newClusterSize)) calloc(numClusters,
-sizeof(**local_newClusterSize));
-local_newClusters[thisThreadId] = (typeof(*local_newClusters)) calloc(numClusters * numCoords,
-sizeof(**local_newClusters));
-}
+__global__ static void find_nearest_cluster(int numCoords,
+                                            int numObjs,
+                                            int numClusters,
+                                            float *objects,       //  [numObjs][numCoords]
+                                            float *deviceClusters,//  [numClusters][numCoords]
+                                            int *deviceMembership,//  [numObjs]
+                                            float *devdelta) {
 
-...
+  /* Get the global ID of the thread. */
+  int tid = get_tid();
+  // this could be also done with a Grid-Stride Loop
+  if (tid < numObjs) {
+    int index, i;
+    float dist, min_dist;
+    /* find the cluster id that has min distance to object */
+    index = 0;
+    // call euclid_dist_2 for objectId = tid
+    min_dist = euclid_dist_2(numCoords, numObjs, numClusters, objects, deviceClusters, tid, 0);
 
-#pragma
-omp parallel shared(objects, clusters, membership, local_newClusters, local_newClusterSize)
-{
-int thisThreadId = omp_get_thread_num();
-for (i = 0; i < numClusters; i++) {
-for (j = 0; j < numCoords; j++) {
-local_newClusters[thisThreadId][i * numCoords + j] = 0.0;
-}
-local_newClusterSize[thisThreadId][i] = 0;
-}
+    for (i = 1; i < numClusters; i++) {
+      // call euclid_dist_2 for objectId = tid
+      dist = euclid_dist_2(numCoords, numObjs, numClusters, objects, deviceClusters, tid, i);
 
-#pragma
-omp for
-private(i, j, index) reduction(+:delta) schedule(static, numObjsPerThread)
-for (i = 0; i < numObjs; i++) {
-// find the array index of nearest cluster center
-index = find_nearest_cluster(numClusters, numCoords, &objects[i * numCoords], clusters);
+      /* no need square root */
+      if (dist < min_dist) { /* find the min and its array index */
+        min_dist = dist;
+        index = i;
+      }
+    }
 
-// if membership changes, increase delta by 1
-if (membership[i] != index)
-delta += 1.0;
+    if (deviceMembership[tid] != index) {
+      // use atomic operations to avoid errors
+      atomicAdd(devdelta, 1.0);
+    }
 
-// assign the membership to object i
-membership[i] = index;
-
-// update new cluster centers : sum of all objects located within (average will be performed later)
-/*
- * Collect cluster data in local arrays (local to each thread)
- * Replace global arrays with local per-thread
- */
-local_newClusterSize[thisThreadId][index]++;
-for (j = 0; j < numCoords; j++)
-local_newClusters[thisThreadId][index * numCoords + j] += objects[i * numCoords + j];
-}
+    /* assign the deviceMembership to object objectId */
+    deviceMembership[tid] = index;
+  }
 }
 ```
 
-This technique, takes advantage of the first-touch policy, which dictates that a memory page is 'actually' allocated
-when
-it's first used (read or write operation) by a thread or a process. In this case, by having each thread 'first touch'
-its data, the system maps it near the NUMA node associated with the thread. Apart from the advantage of each thread
-having the data it's going to use in a close memory location, the above minimizes the negatives of a possible
-false-sharing scenario. In this case (which occurs for small data sizes), the data of multiple threads can be stored
-in the same memory (cache) line. This can cause the false impression that multiple threads are trying to access the
-same data, when concurrent write operations are happening, stalling execution. When the thread-local data are stored
-in remote memory locations in the NUMA memory system, this phenomenon can result in great performance loss. A practical
-example of this will be shown further bellow.
+As is evident, this resembles the parallelization of the  _numObjs_ for-loop, similarly to the naive shared memory
+version. No GPU shared memory was used in this version, however other auxiliary functions like _euclid_dist_2_ were
+defined, in order to be properly executed by the GPU.
 
-On the other hand, another data-locality that can be implemented has to do with the initialization of the _objects_
-array, which represents the N-dimensional space of the problem. Following the reasoning mentioned above, each thread can
-initialize and 'touch' the segment of the array
-that it's going to use. To achieve this and to ensure that the access to _objects_ is done in a predefined order by the
-threads, static scheduling is used. Code-wise these changes were made in _[file_io.c](kmeans/file_io.c)_:
+Apart from the above, the full implementation using CUDA requires the appropriate memory copies as well as other
+definitions of additional functions for the device and the host. These details for this and all the other versions
+can be found in the corresponding files, mentioned in the table above.
+
+### [Transpose GPU kmeans](kmeans/cuda_kmeans_transpose.cu)
+
+To make better use of data-locality between neighbouring threads, this version transposes the _objects_
+array, which is given in a _[numObjs][numCoords]_ layout and is transformed in a new _[numCoords][numObjs]_ layout.
+This helps with performance, because when neighbouring threads execute computations on the iCoord of their objects, the
+memory shared will now contain the iCoords of neighbouring objects (which are used by the neighbouring threads).
+
+### [Shared GPU kmeans](kmeans/cuda_kmeans_shared.cu)
+
+In this version, the GPU's shared memory is put into use. Namely, the array where the cluster centers are stored is
+transferred into that shared memory, in order for all the threads to use it.
+
+### [All GPU kmeans V1](kmeans/cuda_kmeans_all_gpuSharedMemory2D.cu)
+
+In this version, the _find_nearest_cluster_ kernel uses GPU shared memory for the new cluster sizes array (apart
+from the new clusters array which was added to the shared version above) and a new kernel
+is implemented (_reduce_newClusterData_and_update_centroids_), in order to update the new clusters in parallel.
+Before parallelization, this was done by the CPU using the code bellow.
 
 ```c
-int numObjsPerThread = numObjs / omp_get_max_threads();
-
-/* allocate space for objects[][] and read all objects */
-objects = (typeof(objects)) malloc(numObjs * numCoords * sizeof(*objects));
-
-#pragma omp parallel for schedule(static, numObjsPerThread)
 for (i = 0; i < numObjs; i++) {
-  unsigned int seed = i;
+  /* find the array index of nestest cluster center */
+  index = membership[i];
+
+  /* update new cluster centers : sum of objects located within */
+  newClusterSize[index]++;
+  for (j = 0; j < numCoords; j++)
+    newClusters[j][index] += objects[i * numCoords + j];
+}
+
+/* average the sum and replace old cluster centers with newClusters */
+for (i = 0; i < numClusters; i++) {
   for (j = 0; j < numCoords; j++) {
-    objects[i * numCoords + j] = (rand_r(&seed) / ((float) RAND_MAX)) * val_range;
-    if (_debug && i == 0)
-      printf("object[i=%ld][j=%ld]=%f\n", i, j, objects[i * numCoords + j]);
+    if (newClusterSize[i] > 0)
+      dimClusters[j][i] = newClusters[j][i] / newClusterSize[i];
+    newClusters[j][i] = 0.0;   /* set back to 0 */
+  }
+  newClusterSize[i] = 0;   /* set back to 0 */
+}
+```
+
+As is apparent, these for-loops include operations on both 1D and 2D arrays. To easily parallelize operations on the
+latter (2D array) using a GPU, a 2D thread grid was used. Namely, the CUDA version for the above snippet is the
+following:
+
+```c
+int iCluster = threadIdx.x + blockDim.x * blockIdx.x;
+int iCoord = threadIdx.y + blockIdx.y * blockDim.y;
+int iBlock;
+for (iBlock = 0; iBlock < numClusterBlocks; iBlock++) {
+  if (iCluster < numClusters) {
+    shmemNewClusterSize[iCluster] += deviceLocalNewClusterSize[iBlock * numClusters + iCluster];
+    if (iCoord < numCoords) {
+      shmemNewClusters[numClusters * iCoord + iCluster] += deviceLocalNewClusters[iBlock * numClusters * numCoords +
+                                                                                  iCoord * numClusters + iCluster];
+    }
+  }
+}
+__syncthreads();
+// Update Centroids in Parallel
+if (iCluster < numClusters) {
+  if (iCoord < numCoords) {
+    if (shmemNewClusterSize[iCluster] > 0) {
+      deviceClusters[iCoord * numClusters + iCluster] =
+              shmemNewClusters[iCoord * numClusters + iCluster] / shmemNewClusterSize[iCluster];
+    }
+  }
+}
+```
+This kernel is executed by a single thread block, and it performs reduction on the values produced by the previous kernel,
+using the shared memory. After the reduction, the new values are stored in an accessible location (_deviceClusters_) 
+to be used in the next do-while iteration. 
+
+As for the shared memory layouts, _find_nearest_cluster_ has the following
+
+| numCoords * numClusters * sizeof(float) | numClusters * sizeof(int) |
+|-----------------------------------------|---------------------------|
+| newClusters                             | newClusterSize            |
+
+and _reduce_newClusterData_and_update_centroids_:
+
+| numCoords * numClusters * sizeof(float) | numCoords * numClusters * sizeof(float) | numClusters * sizeof(int) |
+|-----------------------------------------|-----------------------------------------|---------------------------|
+| deviceClusters                          | newClusters                             | newClusterSize            |
+
+
+This implementation introduces a limitation. Specifically, the threδεν ad
+block used to run the reduction can only include a maximum of 1024 threads (maximum threads per CUDA block),
+meaning that the product _numClusters * numCoords_ has to be less than or equal to 1024. This could have been avoided by using
+more thread blocks for this kernel, but in that case, the speedup that is brought with the use of a shared memory (shared
+only between thread blocks), would have been lost.
+
+### [All GPU kmeans V2](kmeans/cuda_kmeans_all_gpuReduceParallelBlock.cu)
+
+One level of potential parallelization that is lost in the above kernel, lies in the reduction part. Namely, there need
+to be _numClusterBlocks_ outer iterations in order for all the data from the previous kernel to be summed. Additionally,
+one of the for-loops parallelized in the above version uses _numCoords_ threads, a number which is usually smaller than
+_numClusterBlocks_. With all the above in mind, the _reduce_newClusterData_and_update_centroids_ kernel is broken into 
+two, _reduce_newClusterData_ which doesn't use shared memory and _update_centroids_
+which is similar to the second part of the previous kernel.
+
+```c
+__global__ static void reduce_newClusterData(int numCoords, int numClusters, int numClusterBlocks,
+                                             int *deviceLocalNewClusterSize, float *deviceLocalNewClusters,
+                                             float *deviceNewClusters, int *deviceNewClusterSize) {
+
+  int iBlock = get_tid();
+  int iCluster = threadIdx.y + blockDim.y * blockIdx.y;;
+  int iCoord;
+  if (iBlock < numClusterBlocks) {
+    if (iCluster < numClusters) {
+      atomicAdd(&deviceNewClusterSize[iCluster], deviceLocalNewClusterSize[iBlock * numClusters + iCluster]);
+      for (iCoord = 0; iCoord < numCoords; iCoord++) {
+        atomicAdd(&deviceNewClusters[numClusters * iCoord + iCluster],
+                  deviceLocalNewClusters[iBlock * numClusters * numCoords + iCoord * numClusters + iCluster]);
+      }
+    }
+  }
+}
+
+
+__global__ static void update_centroids(int numCoords, int numClusters,
+                                        float *deviceClusters,
+                                        float *deviceNewClusters, int *deviceNewClusterSize) {
+  extern __shared__ float sharedMemory[];
+
+  float *shmemNewClusters = &sharedMemory[0];
+  int *shmemNewClusterSize = (int *) (sharedMemory + numClusters * numCoords);
+
+  if (threadIdx.x == 0) {
+    // Thread 0 of each block copies the Cluster Data to the shared memory
+    memcpy(shmemNewClusterSize, deviceNewClusterSize, numClusters * sizeof(int));
+    memcpy(shmemNewClusters, deviceNewClusters, numClusters * numCoords * sizeof(float));
+  }
+
+  int iCluster = get_tid();
+  int iCoord = threadIdx.y + blockIdx.y * blockDim.y;
+  // Update Centroids in Parallel
+  if (iCluster < numClusters) {
+    if (iCoord < numCoords) {
+      if (shmemNewClusterSize[iCluster] > 0) {
+        deviceClusters[iCoord * numClusters + iCluster] =
+                shmemNewClusters[iCoord * numClusters + iCluster] / shmemNewClusterSize[iCluster];
+      }
+    }
   }
 }
 ```
 
 ### Time Measurements and Plots
 
-#### Execution Times
+<img src="plots/cudaAllVersionsBars16Coords.png" width="1378">
+The above plot, shows the execution time for various thread block sizes. Especially for larger blocks, performance is
+significantly improved as the implementations get more complex. This is to be expected, since the more complex versions
+make better use of the available resources. One particular reason for the improvement of performnce in the all GPU
+versions, is the minimization of CPU and Memory Transfers time. This can be seen in the following figure, which shows
+the different timers for all the parallel versions. 
 
-The following plot shows the execution time for the different parallel implementations. Starting with the naive versions
-it is apparent that binding the threads with a specific physical core (using the GOMP_CPU_AFFINITY env. variable) vastly
-improves performance. Moving on to the versions that include reduction, when compared to the naive version, performance
-is generally better. However, for smaller values of the parameters, there is a huge performance penalty (comparing the
-orange and green bars). This can be attributed to false-sharing, as mentioned earlier. This hypothesis is also
-backed by the fact that the implementation with reduction and thread-allocated local data (pink bar),
-eliminates this effect. Lastly, the implementations with NUMA-aware object initialization introduce a further
-improvement
-in performance, especially for greater numbers of threads. This is expected, considering the previous explanations.
-
-<img src="plots/allVersionsBars.png" width="1381">
+<img src="plots/cudaAllVersionsBars16CoordsAdvTimers.png" width="1382">
